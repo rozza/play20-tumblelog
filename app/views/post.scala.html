@@ -1,0 +1,21 @@
+@(post: Blog)
+
+@pageHeader = {
+<div class="page-header">
+   <h1>@post.title</h1>
+</div>
+}
+
+@main(title=post.title)(pageHeader=pageHeader) {
+  <p>@post.body<p>
+  <p>${post.created_at.format('hh:mm yyyy-mm-dd')}</p>
+  <hr>
+  <h2>Comments</h2>
+  @for(comment <- post.comments) {
+ 	<p>@comment.body</p>
+    <p><strong>@comment.author</strong> <small>on ${comment.created_at.format('hh:mm yyyy-mm-dd')}</small></p>
+    @comment.body
+  
+  }
+
+}

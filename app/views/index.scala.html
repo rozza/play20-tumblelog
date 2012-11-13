@@ -1,0 +1,10 @@
+@(posts: List[Blog])
+@pageHeader = {}
+
+@main(title="My Tumblelog!")(pageHeader=pageHeader) {
+    <ul> 
+        @posts.map { post =>
+            <li><a href="@routes.Application.getPost(post.slug)">@post.title</a></li>
+        }
+    </ul>
+}
