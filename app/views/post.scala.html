@@ -1,4 +1,8 @@
-@(post: Blog)
+@(post: Blog, commentForm: Form[Comment])
+
+@import helper._
+@import helper.twitterBootstrap._
+@implicitField = @{ FieldConstructor(helpers.twitterBootstrapInput.f)  }
 
 @pageHeader = {
 <div class="page-header">
@@ -8,14 +12,38 @@
 
 @main(title=post.title)(pageHeader=pageHeader) {
   <p>@post.body<p>
-  <p>${post.created_at.format('hh:mm yyyy-mm-dd')}</p>
+  <p>@post.created_at.format("dd MMMM yyyy hh:mm:ss")</p>
   <hr>
   <h2>Comments</h2>
   @for(comment <- post.comments) {
- 	<p>@comment.body</p>
-    <p><strong>@comment.author</strong> <small>on ${comment.created_at.format('hh:mm yyyy-mm-dd')}</small></p>
-    @comment.body
-  
+    <p>@comment.body</p>
+    <p>By <strong>@comment.author</strong> <small>on @comment.created_at.format("dd MMMM yyyy hh:mm:ss")</small></p>
+  }
+
+@helper.form(action = routes.Application.addComment(post.slug),
+               'id -> "postForm",
+               'class -> "form-horizontal") {
+  <fieldset>
+        <legend>Add comment</legend>
+        @textarea(
+          commentForm("body"),
+          '_label -> "Comment",
+          '_help -> "",
+          '_error -> commentForm.globalError
+        )
+        @inputText(
+          commentForm("author"),
+          '_label -> "Your Name",
+          '_help -> "",
+          '_error -> commentForm.globalError
+        )
+     <hr />
+     <div class="control-group">
+        <div class="controls">
+          <input type="submit" value="Comment" class="btn btn-primary">
+        </div>
+      </div>
+     </fieldset>
   }
 
 }

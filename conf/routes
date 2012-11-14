@@ -4,7 +4,11 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /add						controllers.Application.addPost
+POST    /add						controllers.Application.addPostSubmit
+
 GET     /:slug						controllers.Application.getPost(slug)
+POST    /:slug						controllers.Application.addComment(slug)
 
 # Webjars
 GET     /webjars/*file              controllers.WebJarAssets.at(file)

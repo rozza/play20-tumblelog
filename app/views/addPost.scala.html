@@ -1,6 +1,31 @@
-@(form: Form[Blog])
+@(blogForm: Form[Blog])
+
+@import helper._
+@implicitField = @{ FieldConstructor(helpers.twitterBootstrapInput.f)  }
+
 @pageHeader = {}
 
 @main(title="Add new post")(pageHeader=pageHeader) {
-<h1>FORM</h1>
+  @helper.form(action = routes.Application.addPostSubmit,
+               'id -> "postForm",
+               'class -> "form-horizontal") {
+  <fieldset>
+        <legend>Add post</legend>
+        @inputText(
+        blogForm("title"),
+                '_label -> "Title",
+                '_help -> "Blog post title",
+                '_error -> blogForm.globalError
+            )
+        @inputText(blogForm("slug"))
+        @textarea(blogForm("body"))
+     <hr />
+     <div class="control-group">
+        <div class="controls">
+          <input type="submit" value="Save" class="btn btn-primary"> or
+              <a href="@routes.Application.index" class="btn btn-warning">Cancel</a>
+        </div>
+      </div>
+     </fieldset>
+  }
 }

@@ -16,7 +16,7 @@ case class Blog(
   title: String,
   slug: String,
   body: String,
-  comments: List[Comment])
+  comments: List[Comment] = List())
 
 case class Comment(
   created_at: Date = new Date(),
@@ -29,6 +29,8 @@ object Blog extends ModelCompanion[Blog, ObjectId] {
 
   def all(): List[Blog] = dao.find(MongoDBObject.empty).toList
   def getPost(slug: String): Option[Blog] = dao.findOne(MongoDBObject("slug" -> slug))
-
-
+  def addComment(post: Blog, comment: Comment): Unit = {
+    val updateQuery = $push ("comments" -> MongoDBObject("body" -> comment.body, "author" -> comment.author ))
+    dao.update (MongoDBObject("_id" -> post.id), updateQuery) 
+  }
 }

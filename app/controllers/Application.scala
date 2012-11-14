@@ -8,8 +8,11 @@ import play.api.data.Forms._
 
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
+
+import controllers.Secured._
 import models._
 import forms._
+
 
 object Application extends Controller {
 
@@ -20,17 +23,37 @@ object Application extends Controller {
 
   def getPost(slug: String) = Action {
     Blog.getPost(slug).map(post =>
-      Ok(views.html.post(post))).getOrElse(NotFound)
+      Ok(views.html.post(post, BlogForm.commentForm))
+    ).getOrElse(NotFound)
   }
-  
 
-  def addPost() = Action { implicit request =>
-    BlogForm.form.bindFromRequest.fold(
-      form => BadRequest(views.html.addPost(form)),
-      value => {
-        Blog.insert(value)
-        Redirect(routes.Application.index).flashing(
-          "message" -> "User Registered!")
-      })
+  def addComment(slug: String) = Action { implicit request =>
+    Blog.getPost(slug).map(post =>
+      BlogForm.commentForm.bindFromRequest.fold(
+        commentForm => BadRequest(views.html.post(post, commentForm)),
+        comment => {
+          Blog.addComment(post, comment)
+          Redirect(routes.Application.getPost(slug = post.slug)).flashing(
+            "message" -> "Comment added")
+        })
+    ).getOrElse(NotFound)
+  }
+
+  def addPost = BasicAuth("admin", "password") {
+    Action {
+      Ok(views.html.addPost(BlogForm.blogForm))
+    }
+  }
+
+  def addPostSubmit = BasicAuth("admin", "password") {
+    Action { implicit request =>
+      BlogForm.blogForm.bindFromRequest.fold(
+        blogForm => BadRequest(views.html.addPost(blogForm)),
+        post => {
+          Blog.insert(post)
+          Redirect(routes.Application.index).flashing(
+            "message" -> "User Registered!")
+        })
+    }
   }
 }
