@@ -17,20 +17,20 @@ import forms._
 object Application extends Controller {
 
   def index = Action {
-    val posts = Blog.all
-    Ok(views.html.index(posts))
+    val posts = Blog.findAll
+    Ok(views.html.index(posts.toList))
   }
 
   def getPost(slug: String) = Action {
-    Blog.getPost(slug).map(post =>
-      Ok(views.html.post(post, BlogForm.commentForm))
+    Blog.findOne(MongoDBObject("slug" -> slug)).map(post =>
+      Ok(views.html.post.blogpost(post, BlogForm.commentForm))
     ).getOrElse(NotFound)
   }
 
   def addComment(slug: String) = Action { implicit request =>
-    Blog.getPost(slug).map(post =>
+    Blog.findOne(MongoDBObject("slug" -> slug)).map(post =>
       BlogForm.commentForm.bindFromRequest.fold(
-        commentForm => BadRequest(views.html.post(post, commentForm)),
+        commentForm => BadRequest(views.html.post.blogpost(post, commentForm)),
         comment => {
           Blog.addComment(post, comment)
           Redirect(routes.Application.getPost(slug = post.slug)).flashing(
@@ -39,21 +39,27 @@ object Application extends Controller {
     ).getOrElse(NotFound)
   }
 
-  def addPost = BasicAuth("admin", "password") {
+  def addPost(postType: Option[String]) = BasicAuth("admin", "password") {
     Action {
-      Ok(views.html.addPost(BlogForm.blogForm))
+      val form = getForm(postType)
+      Ok(views.html.addPost(BlogForm.blogForm, postType))
     }
   }
 
-  def addPostSubmit = BasicAuth("admin", "password") {
+  def addPostSubmit(postType: Option[String]) = BasicAuth("admin", "password") {
     Action { implicit request =>
       BlogForm.blogForm.bindFromRequest.fold(
-        blogForm => BadRequest(views.html.addPost(blogForm)),
+        blogForm => BadRequest(views.html.addPost(blogForm, postType)),
         post => {
-          Blog.insert(post)
+          BlogPost.insert(post)
           Redirect(routes.Application.index).flashing(
             "message" -> "User Registered!")
         })
     }
   }
+
+  def getForm(postType: Option[String]): Form[_] = postType match {
+      case Some("blogPost") => BlogForm.blogForm
+      case _ => BlogForm.blogForm
+    }
 }

@@ -10,13 +10,15 @@ import com.novus.salat.dao._
 import mongoContext._
 import se.radley.plugin.salat._
 
-case class Blog(
-  id: ObjectId = new ObjectId,
-  created_at: Date = new Date(),
-  title: String,
-  slug: String,
-  body: String,
-  comments: List[Comment] = List())
+@Salat
+trait Blog {
+  val id: ObjectId
+  val created_at: Date
+  val title: String
+  val slug: String
+  val body: String
+  val comments: List[Comment]
+}
 
 case class Comment(
   created_at: Date = new Date(),
@@ -27,10 +29,24 @@ object Blog extends ModelCompanion[Blog, ObjectId] {
   val collection = mongoCollection("blog")
   val dao = new SalatDAO[Blog, ObjectId](collection = collection) {}
 
-  def all(): List[Blog] = dao.find(MongoDBObject.empty).toList
   def getPost(slug: String): Option[Blog] = dao.findOne(MongoDBObject("slug" -> slug))
+
   def addComment(post: Blog, comment: Comment): Unit = {
     val updateQuery = $push ("comments" -> MongoDBObject("body" -> comment.body, "author" -> comment.author ))
-    dao.update (MongoDBObject("_id" -> post.id), updateQuery) 
+    dao.update (MongoDBObject("_id" -> post.id), updateQuery)
   }
+}
+
+case class BlogPost (
+  id: ObjectId = new ObjectId,
+  created_at: Date = new Date(),
+  title: String,
+  slug: String,
+  body: String,
+  comments: List[Comment] = List()
+) extends Blog
+
+object BlogPost extends ModelCompanion[BlogPost, ObjectId] {
+  val collection = mongoCollection("blog")
+  val dao = new SalatDAO[BlogPost, ObjectId](collection = collection) {}
 }
