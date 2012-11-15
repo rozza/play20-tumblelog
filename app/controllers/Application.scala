@@ -50,7 +50,7 @@ object Application extends Controller {
       BlogForm.blogForm.bindFromRequest.fold(
         blogForm => BadRequest(views.html.addPost(blogForm)),
         post => {
-          Blog.insert(post)
+          BlogPost.insert(post)
           Redirect(routes.Application.index).flashing(
             "message" -> "User Registered!")
         })

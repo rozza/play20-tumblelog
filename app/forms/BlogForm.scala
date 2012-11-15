@@ -13,8 +13,11 @@ package object BlogForm {
       "title" -> nonEmptyText,
       "slug" -> nonEmptyText,
       "body" -> nonEmptyText)
-      ((title, slug, body) => Blog.fromMap(Map("title" -> title, "slug" -> slug, "body" -> body, "comments" -> List())))
-      ((blog: Blog) => Some((blog.title, blog.slug, blog.body))))
+      ((title, slug, body) => BlogPost.fromMap(
+        Map("title" -> title,
+            "slug" -> slug,
+            "body" -> body)))
+      ((blog: BlogPost) => Some((blog.title, blog.slug, blog.body))))
 
   val commentForm = Form(
     mapping(
