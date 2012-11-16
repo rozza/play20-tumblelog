@@ -17,49 +17,43 @@ import forms._
 object Application extends Controller {
 
   def index = Action {
-    val posts = Blog.findAll
-    Ok(views.html.index(posts.toList))
+    Ok(views.html.index(Post.findAll.toList))
   }
 
   def getPost(slug: String) = Action {
-    Blog.findOne(MongoDBObject("slug" -> slug)).map(post =>
-      Ok(views.html.post.blogpost(post, BlogForm.commentForm))
+    Post.findOne(MongoDBObject("slug" -> slug)).map(post =>
+      Ok(views.html.post(post, BlogForm.commentForm))
     ).getOrElse(NotFound)
   }
 
   def addComment(slug: String) = Action { implicit request =>
-    Blog.findOne(MongoDBObject("slug" -> slug)).map(post =>
+    Post.findOne(MongoDBObject("slug" -> slug)).map(post =>
       BlogForm.commentForm.bindFromRequest.fold(
-        commentForm => BadRequest(views.html.post.blogpost(post, commentForm)),
+        commentForm => BadRequest(views.html.post(post, commentForm)),
         comment => {
-          Blog.addComment(post, comment)
+          Post.addComment(post, comment)
           Redirect(routes.Application.getPost(slug = post.slug)).flashing(
             "message" -> "Comment added")
         })
     ).getOrElse(NotFound)
   }
 
-  def addPost(postType: Option[String]) = BasicAuth("admin", "password") {
+  def addPost = BasicAuth("admin", "password") {
     Action {
-      val form = getForm(postType)
-      Ok(views.html.addPost(BlogForm.blogForm, postType))
+      Ok(views.html.addPost(BlogForm.postForm))
     }
   }
 
-  def addPostSubmit(postType: Option[String]) = BasicAuth("admin", "password") {
+  def addPostSubmit = BasicAuth("admin", "password") {
     Action { implicit request =>
-      BlogForm.blogForm.bindFromRequest.fold(
-        blogForm => BadRequest(views.html.addPost(blogForm, postType)),
+      BlogForm.postForm.bindFromRequest.fold(
+        blogForm => BadRequest(views.html.addPost(blogForm)),
         post => {
-          BlogPost.insert(post)
+          Post.insert(post)
           Redirect(routes.Application.index).flashing(
             "message" -> "User Registered!")
         })
     }
   }
 
-  def getForm(postType: Option[String]): Form[_] = postType match {
-      case Some("blogPost") => BlogForm.blogForm
-      case _ => BlogForm.blogForm
-    }
 }

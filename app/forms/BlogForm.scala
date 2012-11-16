@@ -8,16 +8,16 @@ import com.mongodb.casbah.Imports._
 import models._
 
 package object BlogForm {
-  val blogForm = Form(
+  val postForm = Form(
     mapping(
       "title" -> nonEmptyText,
       "slug" -> nonEmptyText,
       "body" -> nonEmptyText)
-      ((title, slug, body) => BlogPost.fromMap(
+      ((title, slug, body) => Post.fromMap(
         Map("title" -> title,
             "slug" -> slug,
             "body" -> body)))
-      ((blog: BlogPost) => Some((blog.title, blog.slug, blog.body))))
+      ((post: Post) => Some((post.title, post.slug, post.body))))
 
   val commentForm = Form(
     mapping(

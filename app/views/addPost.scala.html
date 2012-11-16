@@ -1,4 +1,4 @@
-@(blogForm: Form[_], postType: Option[String])
+@(blogForm: Form[Post])
 
 @import helper._
 @implicitField = @{ FieldConstructor(helpers.twitterBootstrapInput.f)  }
@@ -6,7 +6,7 @@
 @pageHeader = {}
 
 @main(title="Add new post")(pageHeader=pageHeader) {
-  @helper.form(action = routes.Application.addPostSubmit(postType),
+  @helper.form(action = routes.Application.addPostSubmit,
                'id -> "postForm",
                'class -> "form-horizontal") {
   <fieldset>
